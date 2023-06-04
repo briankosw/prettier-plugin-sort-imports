@@ -1,0 +1,9 @@
+{
+  "plugins": ["./dist/index.js"],
+  "addEmptyLinesBetweenImportGroups": true,
+  "importGroups": [
+    "builtin",
+    "*",
+    "\\.\\/.*"
+  ]
+}

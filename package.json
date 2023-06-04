@@ -1,0 +1,16 @@
+{
+  "name": "@briankosw/prettier-plugin-sort-imports",
+  "packageManager": "yarn@3.5.1",
+  "description": "A Prettier plugin that sorts your import declarations.",
+  "version": "0.0.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/briankosw/prettier-plugin-sort-imports.git"
+  },
+  "author": "Brian Ko",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/briankosw/prettier-plugin-sort-imports/issues"
+  },
+  "homepage": "https://github.com/briankosw/prettier-plugin-sort-imports#readme"
+}

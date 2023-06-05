@@ -20,7 +20,7 @@
   },
   "packageManager": "yarn@3.5.1",
   "description": "A Prettier plugin that sorts your import declarations.",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "directories": {
     "test": "tests"
   },

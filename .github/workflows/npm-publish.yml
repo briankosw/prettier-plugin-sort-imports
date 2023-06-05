@@ -14,7 +14,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 16
-      - run: yarn install --frozen-lockfile
+      - run: yarn install --immutable
       # TODO: add tests
       # - run: npm test
 
@@ -27,7 +27,7 @@ jobs:
         with:
           node-version: 16
           registry-url: https://registry.npmjs.org/
-      - run: yarn install --frozen-lockfile
-      - run: yarn publish --access public
+      - run: yarn install --immutable
+      - run: yarn npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}

@@ -28,7 +28,7 @@ export function validateImportGroups(importGroups: string[] | undefined) {
   }
   if (invalidRegexes.length > 0) {
     throw new SyntaxError(
-      'Invalid regexes passed in as `importGroups: ' + invalidRegexes.join(', ') + '`.',
+      'Invalid regexes passed in as `importGroups`: ' + invalidRegexes.join(', ') + '.',
     )
   }
 }

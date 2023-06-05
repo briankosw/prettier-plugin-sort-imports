@@ -46,6 +46,7 @@ export const parsers: Plugin["parsers"] = {
       validateImportGroups(options.importGroups);
       const ast = parse(text, {
         loc: true,
+        jsx: true,
         // comment: true,
       });
       const body = ast.body;

@@ -1,12 +1,12 @@
+import { parse, AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
 import { Plugin } from 'prettier/index';
 import { parsers as typescriptParsers } from 'prettier/parser-typescript';
-import { parse, AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
+import isBuiltinModule from 'is-builtin-module';
 
 import {
   BUILTIN_IMPORT_GROUP_NAME,
   DISABLE_PRAGMA,
   ET_CETERA_IMPORT_GROUP_NAME,
-  NODE_BUILT_IN_MODULES,
 } from './constants';
 import { ImportSource, LineRange, Options } from './types';
 import { sortImport, validateImportGroups } from './utils';
@@ -48,7 +48,6 @@ export const parsers: Plugin["parsers"] = {
       const ast = parse(text, {
         loc: true,
         jsx: enableJsx,
-        // comment: true,
       });
       const body = ast.body;
       // Grab all the import declarations along with their indices in the list
@@ -89,13 +88,14 @@ export const parsers: Plugin["parsers"] = {
         if (declaration.type !== AST_NODE_TYPES.ImportDeclaration) {
           continue;
         }
-        const source = declaration.source.value.split("/", 1)[0];
+        const source = declaration.source.value;
+        const sourceModule = declaration.source.value.split("/", 1)[0];
         let i = 0;
         for (; i < regexList.length; i++) {
           const regex = regexList[i];
           if (typeof regex === "string") {
             if (regex === BUILTIN_IMPORT_GROUP_NAME) {
-              if (NODE_BUILT_IN_MODULES.has(source)) {
+              if (isBuiltinModule(sourceModule)) {
                 importDeclarationGroups[i].push({
                   range: {
                     start: declaration.loc.start.line,
@@ -109,7 +109,7 @@ export const parsers: Plugin["parsers"] = {
               continue;
             }
           } else {
-            if (regex.test(source)) {
+            if (regex.test(sourceModule)) {
               importDeclarationGroups[i].push({
                 range: {
                   start: declaration.loc.start.line,

@@ -1,6 +1,8 @@
 {
   "name": "@briankosw/prettier-plugin-sort-imports",
   "main": "dist/index",
+  "description": "A Prettier plugin that sorts your import declarations.",
+  "version": "0.0.3",
   "scripts": {
     "build": "tsc",
     "test": "jest"
@@ -20,8 +22,6 @@
     "typescript": "^5.0.4"
   },
   "packageManager": "yarn@3.5.1",
-  "description": "A Prettier plugin that sorts your import declarations.",
-  "version": "0.0.2",
   "directories": {
     "test": "tests"
   },

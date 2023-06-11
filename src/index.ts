@@ -109,7 +109,7 @@ export const parsers: Plugin["parsers"] = {
               continue;
             }
           } else {
-            if (regex.test(sourceModule)) {
+            if (regex.test(source)) {
               importDeclarationGroups[i].push({
                 range: {
                   start: declaration.loc.start.line,

@@ -10,7 +10,7 @@
   "dependencies": {
     "@typescript-eslint/typescript-estree": "^5.59.8",
     "is-builtin-module": "^3.2.1",
-    "prettier": "^2.8.8"
+    "prettier": "^3.0.0"
   },
   "devDependencies": {
     "@types/jest": "^29.5.2",

@@ -34,7 +34,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@typescript-eslint/typescript-estree", "virtual:7d0ef447ca2ed632f5baa60b4660ee8e74833f6d647ad44e5d56502f966bcaba93bd65d3e59bf1d161e718f11f64e418f2f5a45fdbe2c88eaca29bd8959e8e5e#npm:5.59.9"],\
             ["is-builtin-module", "npm:3.2.1"],\
             ["jest", "virtual:7d0ef447ca2ed632f5baa60b4660ee8e74833f6d647ad44e5d56502f966bcaba93bd65d3e59bf1d161e718f11f64e418f2f5a45fdbe2c88eaca29bd8959e8e5e#npm:29.5.0"],\
-            ["prettier", "npm:2.8.8"],\
+            ["prettier", "npm:3.0.0"],\
             ["ts-jest", "virtual:7d0ef447ca2ed632f5baa60b4660ee8e74833f6d647ad44e5d56502f966bcaba93bd65d3e59bf1d161e718f11f64e418f2f5a45fdbe2c88eaca29bd8959e8e5e#npm:29.1.0"],\
             ["ts-node", "virtual:7d0ef447ca2ed632f5baa60b4660ee8e74833f6d647ad44e5d56502f966bcaba93bd65d3e59bf1d161e718f11f64e418f2f5a45fdbe2c88eaca29bd8959e8e5e#npm:10.9.1"],\
             ["typescript", "patch:typescript@npm%3A5.1.3#~builtin<compat/typescript>::version=5.1.3&hash=77c9e2"]\
@@ -836,7 +836,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@typescript-eslint/typescript-estree", "virtual:7d0ef447ca2ed632f5baa60b4660ee8e74833f6d647ad44e5d56502f966bcaba93bd65d3e59bf1d161e718f11f64e418f2f5a45fdbe2c88eaca29bd8959e8e5e#npm:5.59.9"],\
             ["is-builtin-module", "npm:3.2.1"],\
             ["jest", "virtual:7d0ef447ca2ed632f5baa60b4660ee8e74833f6d647ad44e5d56502f966bcaba93bd65d3e59bf1d161e718f11f64e418f2f5a45fdbe2c88eaca29bd8959e8e5e#npm:29.5.0"],\
-            ["prettier", "npm:2.8.8"],\
+            ["prettier", "npm:3.0.0"],\
             ["ts-jest", "virtual:7d0ef447ca2ed632f5baa60b4660ee8e74833f6d647ad44e5d56502f966bcaba93bd65d3e59bf1d161e718f11f64e418f2f5a45fdbe2c88eaca29bd8959e8e5e#npm:29.1.0"],\
             ["ts-node", "virtual:7d0ef447ca2ed632f5baa60b4660ee8e74833f6d647ad44e5d56502f966bcaba93bd65d3e59bf1d161e718f11f64e418f2f5a45fdbe2c88eaca29bd8959e8e5e#npm:10.9.1"],\
             ["typescript", "patch:typescript@npm%3A5.1.3#~builtin<compat/typescript>::version=5.1.3&hash=77c9e2"]\
@@ -4117,10 +4117,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]\
       ]],\
       ["prettier", [\
-        ["npm:2.8.8", {\
-          "packageLocation": "./.yarn/cache/prettier-npm-2.8.8-430828a36c-b49e409431.zip/node_modules/prettier/",\
+        ["npm:3.0.0", {\
+          "packageLocation": "./.yarn/cache/prettier-npm-3.0.0-7ffbcce680-6a832876a1.zip/node_modules/prettier/",\
           "packageDependencies": [\
-            ["prettier", "npm:2.8.8"]\
+            ["prettier", "npm:3.0.0"]\
           ],\
           "linkType": "HARD"\
         }]\

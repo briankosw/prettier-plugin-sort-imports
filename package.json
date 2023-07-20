@@ -2,13 +2,13 @@
   "name": "@briankosw/prettier-plugin-sort-imports",
   "main": "dist/index",
   "description": "A Prettier plugin that sorts your import declarations.",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "scripts": {
     "build": "tsc",
     "test": "jest"
   },
   "dependencies": {
-    "@typescript-eslint/typescript-estree": "^6.1.0",
+    "@typescript-eslint/typescript-estree": "^5.59.9",
     "is-builtin-module": "^3.2.1"
   },
   "devDependencies": {
@@ -19,7 +19,7 @@
     "prettier": "^3.0.0",
     "ts-jest": "^29.1.0",
     "ts-node": "^10.9.1",
-    "typescript": "^5.0.4"
+    "typescript": "^5.1.6"
   },
   "peerDependencies": {
     "prettier": ">=2 || >=3"

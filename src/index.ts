@@ -1,15 +1,15 @@
-import { parse, AST_NODE_TYPES } from '@typescript-eslint/typescript-estree';
-import { Plugin } from 'prettier/index';
-import { parsers as typescriptParsers } from 'prettier/parser-typescript';
-import isBuiltinModule from 'is-builtin-module';
+import { parse, AST_NODE_TYPES } from "@typescript-eslint/typescript-estree";
+import isBuiltinModule from "is-builtin-module";
+import { Plugin } from "prettier/index";
+import typescriptParser from "prettier/plugins/typescript";
 
 import {
   BUILTIN_IMPORT_GROUP_NAME,
   DISABLE_PRAGMA,
   ET_CETERA_IMPORT_GROUP_NAME,
-} from './constants';
-import { ImportSource, LineRange, Options } from './types';
-import { sortImport, validateImportGroups } from './utils';
+} from "./constants";
+import { ImportSource, LineRange, Options } from "./types";
+import { sortImport, validateImportGroups } from "./utils";
 
 export const options = {
   addEmptyLinesBetweenImportGroups: {
@@ -24,7 +24,8 @@ export const options = {
     category: "Global",
     array: true,
     default: [{ value: ["builtin", "*"] }],
-    description: "The groups to sort the imports into. The allowed values are " +
+    description:
+      "The groups to sort the imports into. The allowed values are " +
       "'builtin', '*', and any string that is a valid regular expression, " +
       "where any import that is neither a builtin module nor matches any of " +
       "the regular expressions will be sorted into the '*' import group.",
@@ -34,7 +35,7 @@ export const options = {
 
 export const parsers: Plugin["parsers"] = {
   typescript: {
-    ...typescriptParsers.typescript,
+    ...typescriptParser.parsers.typescript,
     preprocess: (text: string, options: Options) => {
       // Skip sorting imports if the `DISABLE_PRAGMA` is present.
       if (text.includes(DISABLE_PRAGMA)) {
@@ -52,19 +53,22 @@ export const parsers: Plugin["parsers"] = {
       const body = ast.body;
       // Grab all the import declarations along with their indices in the list
       // of AST nodes.
-      const importDeclarations = body.map((declaration, idx) => {
-        return {
-          declaration,
-          idx,
-        }
-      }).filter(({ declaration }) => {
-        return declaration.type === AST_NODE_TYPES.ImportDeclaration;
-      }).map(({ declaration, idx }) => {
-        return {
-          declaration,
-          idx,
-        }
-      });
+      const importDeclarations = body
+        .map((declaration, idx) => {
+          return {
+            declaration,
+            idx,
+          };
+        })
+        .filter(({ declaration }) => {
+          return declaration.type === AST_NODE_TYPES.ImportDeclaration;
+        })
+        .map(({ declaration, idx }) => {
+          return {
+            declaration,
+            idx,
+          };
+        });
       if (importDeclarations.length === 0) {
         return text;
       }
@@ -82,7 +86,8 @@ export const parsers: Plugin["parsers"] = {
       // Group the import declarations based on the groups defined by the
       // `importGroups` option.
       const importDeclarationGroups = Array.from(
-        { length: regexList.length }, () => [] as {range: LineRange, importSource: ImportSource}[]
+        { length: regexList.length },
+        () => [] as { range: LineRange; importSource: ImportSource }[],
       );
       for (const { declaration } of importDeclarations) {
         if (declaration.type !== AST_NODE_TYPES.ImportDeclaration) {
@@ -136,15 +141,27 @@ export const parsers: Plugin["parsers"] = {
       const lines = text.split("\n");
       let imports: string;
       if (options.addEmptyLinesBetweenImportGroups) {
-        imports = importDeclarationGroups.map(
-          (group) => group.sort((a, b) => sortImport(a.importSource, b.importSource))
-            .map(({ range }) => lines.slice(range.start - 1, range.end).join("\n")).join("\n")
-        ).join("\n\n");
+        imports = importDeclarationGroups
+          .map((group) =>
+            group
+              .sort((a, b) => sortImport(a.importSource, b.importSource))
+              .map(({ range }) =>
+                lines.slice(range.start - 1, range.end).join("\n"),
+              )
+              .join("\n"),
+          )
+          .join("\n\n");
       } else {
-        imports = importDeclarationGroups.map(
-          (group) => group.sort((a, b) => sortImport(a.importSource, b.importSource))
-            .map(({ range }) => lines.slice(range.start - 1, range.end).join("\n")).join("\n")
-        ).join("\n");
+        imports = importDeclarationGroups
+          .map((group) =>
+            group
+              .sort((a, b) => sortImport(a.importSource, b.importSource))
+              .map(({ range }) =>
+                lines.slice(range.start - 1, range.end).join("\n"),
+              )
+              .join("\n"),
+          )
+          .join("\n");
       }
       // Calculate the line ranges of the import declarations in the original
       // file so that they can be removed. It's calculating the line ranges so
@@ -152,15 +169,17 @@ export const parsers: Plugin["parsers"] = {
       // range so that when the lines are removed from the original file, the
       // number of splices will be minimized.
       const firstImportDeclaration = body[importDeclarations[0].idx];
-      const importLineRanges: LineRange[] = [{
-        start: firstImportDeclaration.loc.start.line,
-        end: firstImportDeclaration.loc.end.line,
-      }];
+      const importLineRanges: LineRange[] = [
+        {
+          start: firstImportDeclaration.loc.start.line,
+          end: firstImportDeclaration.loc.end.line,
+        },
+      ];
       for (let i = 1; i < importDeclarations.length; i++) {
         const importDecIndexA = importDeclarations[i - 1].idx;
         const importDecIndexB = importDeclarations[i].idx;
         if (importDecIndexA === importDecIndexB - 1) {
-          const prevLineRange = importLineRanges[importLineRanges.length - 1]
+          const prevLineRange = importLineRanges[importLineRanges.length - 1];
           const importDecB = body[importDecIndexB];
           importLineRanges[importLineRanges.length - 1] = {
             start: prevLineRange.start,
@@ -183,4 +202,3 @@ export const parsers: Plugin["parsers"] = {
     },
   },
 };
-

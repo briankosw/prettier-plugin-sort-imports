@@ -1,7 +1,7 @@
 import { parse, AST_NODE_TYPES } from "@typescript-eslint/typescript-estree";
 import isBuiltinModule from "is-builtin-module";
 import { Plugin } from "prettier/index";
-import typescriptParser from "prettier/plugins/typescript";
+import { parsers as typescriptParsers } from "prettier/plugins/typescript";
 
 import {
   BUILTIN_IMPORT_GROUP_NAME,
@@ -35,7 +35,7 @@ export const options = {
 
 export const parsers: Plugin["parsers"] = {
   typescript: {
-    ...typescriptParser.parsers.typescript,
+    ...typescriptParsers.typescript,
     preprocess: (text: string, options: Options) => {
       // Skip sorting imports if the `DISABLE_PRAGMA` is present.
       if (text.includes(DISABLE_PRAGMA)) {

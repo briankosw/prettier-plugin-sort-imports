@@ -16,6 +16,7 @@ jobs:
           node-version: 18
           cache: 'yarn'
       - run: yarn install --immutable
+      - run: yarn build
       # TODO: add tests
       # - run: npm test
 

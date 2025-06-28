@@ -1,4 +1,8 @@
-import { parse, AST_NODE_TYPES } from "@typescript-eslint/typescript-estree";
+import {
+  parse,
+  AST_NODE_TYPES,
+  TSESTree,
+} from "@typescript-eslint/typescript-estree";
 import isBuiltinModule from "is-builtin-module";
 import { Plugin } from "prettier/index";
 import { parsers as typescriptParsers } from "prettier/plugins/typescript";
@@ -8,7 +12,7 @@ import {
   DISABLE_PRAGMA,
   ET_CETERA_IMPORT_GROUP_NAME,
 } from "./constants";
-import { ImportSource, LineRange, Options } from "./types";
+import { Options } from "./types";
 import { sortImport, validateImportGroups } from "./utils";
 
 export const options = {
@@ -36,7 +40,10 @@ export const options = {
 export const parsers: Plugin["parsers"] = {
   typescript: {
     ...typescriptParsers.typescript,
-    preprocess: (text: string, options: Options) => {
+    preprocess: (text: string, options: Options): string => {
+      if (typescriptParsers.typescript.preprocess) {
+        text = typescriptParsers.typescript.preprocess(text, options);
+      }
       // Skip sorting imports if the `DISABLE_PRAGMA` is present.
       if (text.includes(DISABLE_PRAGMA)) {
         return text;
@@ -44,31 +51,23 @@ export const parsers: Plugin["parsers"] = {
       if (options.importGroups == null) {
         return text;
       }
+
       validateImportGroups(options.importGroups);
-      const enableJsx = options.filepath?.endsWith("tsx");
+
       const ast = parse(text, {
+        ...options,
         loc: true,
-        jsx: enableJsx,
+        range: true,
+        comment: true,
       });
+
       const body = ast.body;
-      // Grab all the import declarations along with their indices in the list
-      // of AST nodes.
-      const importDeclarations = body
-        .map((declaration, idx) => {
-          return {
-            declaration,
-            idx,
-          };
-        })
-        .filter(({ declaration }) => {
-          return declaration.type === AST_NODE_TYPES.ImportDeclaration;
-        })
-        .map(({ declaration, idx }) => {
-          return {
-            declaration,
-            idx,
-          };
-        });
+      // Grab all the import declarations
+      const importDeclarations = body.filter(
+        (statement): statement is TSESTree.ImportDeclaration => {
+          return statement.type === AST_NODE_TYPES.ImportDeclaration;
+        },
+      );
       if (importDeclarations.length === 0) {
         return text;
       }
@@ -87,14 +86,43 @@ export const parsers: Plugin["parsers"] = {
       // `importGroups` option.
       const importDeclarationGroups = Array.from(
         { length: regexList.length },
-        () => [] as { range: LineRange; importSource: ImportSource }[],
+        (): Array<{
+          declaration: TSESTree.ImportDeclaration;
+          leadingComments: TSESTree.Comment[];
+        }> => [],
       );
-      for (const { declaration } of importDeclarations) {
-        if (declaration.type !== AST_NODE_TYPES.ImportDeclaration) {
-          continue;
+
+      let availableComments = [...ast.comments];
+      function commentEndingAtLine(line: number): TSESTree.Comment | undefined {
+        const commentIdx = availableComments.findIndex(
+          (comment) => comment.loc.end.line + 1 === line,
+        );
+        if (commentIdx !== -1) {
+          const comment = availableComments[commentIdx];
+          availableComments.splice(commentIdx, 1);
+          return comment;
         }
+        return undefined;
+      }
+      function commentsEndingAtLine(line: number): TSESTree.Comment[] {
+        let comments = [];
+        let searchLine: number | undefined = line;
+        do {
+          const comment = commentEndingAtLine(searchLine);
+          if (comment) {
+            comments.push(comment);
+          }
+          searchLine = comment?.loc.start.line;
+        } while (searchLine != null);
+        return comments.reverse();
+      }
+
+      for (const declaration of importDeclarations) {
+        const leadingComments = commentsEndingAtLine(
+          declaration.loc.start.line,
+        );
         const source = declaration.source.value;
-        const sourceModule = declaration.source.value.split("/", 1)[0];
+        const sourceModule = source.split("/", 1)[0];
         let i = 0;
         for (; i < regexList.length; i++) {
           const regex = regexList[i];
@@ -102,11 +130,8 @@ export const parsers: Plugin["parsers"] = {
             if (regex === BUILTIN_IMPORT_GROUP_NAME) {
               if (isBuiltinModule(sourceModule)) {
                 importDeclarationGroups[i].push({
-                  range: {
-                    start: declaration.loc.start.line,
-                    end: declaration.loc.end.line,
-                  },
-                  importSource: source,
+                  declaration,
+                  leadingComments,
                 });
                 break;
               }
@@ -115,90 +140,67 @@ export const parsers: Plugin["parsers"] = {
             }
           } else {
             if (regex.test(source)) {
-              importDeclarationGroups[i].push({
-                range: {
-                  start: declaration.loc.start.line,
-                  end: declaration.loc.end.line,
-                },
-                importSource: source,
-              });
+              importDeclarationGroups[i].push({ declaration, leadingComments });
               break;
             }
           }
         }
         if (i === regexList.length) {
           importDeclarationGroups[etCeteraIdx].push({
-            range: {
-              start: declaration.loc.start.line,
-              end: declaration.loc.end.line,
-            },
-            importSource: source,
+            declaration,
+            leadingComments,
           });
         }
       }
-      // Sort the import declarations within each group and convert to string
-      // so that they can be concatenated with the rest of the file.
-      const lines = text.split("\n");
-      let imports: string;
-      if (options.addEmptyLinesBetweenImportGroups) {
-        imports = importDeclarationGroups
-          .map((group) =>
-            group
-              .sort((a, b) => sortImport(a.importSource, b.importSource))
-              .map(({ range }) =>
-                lines.slice(range.start - 1, range.end).join("\n"),
-              )
-              .join("\n"),
-          )
-          .join("\n\n");
+
+      // Sort the import declarations within each group and format them
+      const rangesToDelete: Array<[number, number]> = [];
+      const importText = importDeclarationGroups
+        .map((group) => {
+          group.sort((a, b) =>
+            sortImport(a.declaration.source.value, b.declaration.source.value),
+          );
+          const sectionText = group.map(({ declaration, leadingComments }) => {
+            // Grab the leading comments if there are any
+            const start =
+              leadingComments.at(0)?.range[0] ?? declaration.range[0];
+            const end = declaration.range[1];
+            // Keep track of the ranges so we can omit them when copying the original text
+            rangesToDelete.push([start, end]);
+            return text.slice(start, end);
+          });
+          return sectionText.join("\n");
+        })
+        .join("\n\n");
+
+      // Sort the ranges and then use them to copy the rest of the text
+      rangesToDelete.sort((a, b) => a[0] - b[0]);
+
+      // If there is leading text, add it _before_ the imports
+      let newText: string;
+      let i: number;
+      if (rangesToDelete[0][0] !== 0) {
+        newText = text.slice(0, rangesToDelete[0][0]);
+        i = rangesToDelete[0][0];
       } else {
-        imports = importDeclarationGroups
-          .map((group) =>
-            group
-              .sort((a, b) => sortImport(a.importSource, b.importSource))
-              .map(({ range }) =>
-                lines.slice(range.start - 1, range.end).join("\n"),
-              )
-              .join("\n"),
-          )
-          .join("\n");
+        newText = "";
+        i = 0;
       }
-      // Calculate the line ranges of the import declarations in the original
-      // file so that they can be removed. It's calculating the line ranges so
-      // that consecusive import declarations will be combined into a singlej
-      // range so that when the lines are removed from the original file, the
-      // number of splices will be minimized.
-      const firstImportDeclaration = body[importDeclarations[0].idx];
-      const importLineRanges: LineRange[] = [
-        {
-          start: firstImportDeclaration.loc.start.line,
-          end: firstImportDeclaration.loc.end.line,
-        },
-      ];
-      for (let i = 1; i < importDeclarations.length; i++) {
-        const importDecIndexA = importDeclarations[i - 1].idx;
-        const importDecIndexB = importDeclarations[i].idx;
-        if (importDecIndexA === importDecIndexB - 1) {
-          const prevLineRange = importLineRanges[importLineRanges.length - 1];
-          const importDecB = body[importDecIndexB];
-          importLineRanges[importLineRanges.length - 1] = {
-            start: prevLineRange.start,
-            end: importDecB.loc.end.line,
-          };
-        } else {
-          const importDecB = body[importDecIndexB];
-          importLineRanges.push({
-            start: importDecB.loc.start.line,
-            end: importDecB.loc.end.line,
-          });
+
+      newText += importText;
+      newText += "\n\n";
+
+      // Add the rest of the text after the imports
+      for (const [start, end] of rangesToDelete) {
+        if (i < start) {
+          newText += text.slice(i, start);
         }
+        i = end;
       }
-      // Remove the import declarations from the original file by splicing out
-      // the lines that correspond to the import declarations.
-      for (const { start, end } of importLineRanges.reverse()) {
-        lines.splice(start - 1, end - start + 1);
-      }
-      return imports + "\n" + lines.join("\n");
+      // Copy the remaining text after the last import declaration
+      newText += text.slice(i);
+
+      return newText;
     },
   },
 };

@@ -16,6 +16,7 @@ jobs:
         with:
           node-version: 20
           cache: "yarn"
+      - run: corepack enable
       - run: yarn install --immutable
       - run: yarn build
       # TODO: add tests

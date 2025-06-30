@@ -8,20 +8,6 @@ on:
     types: [published]
   workflow_dispatch:
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 20
-          cache: "yarn"
-      - run: corepack enable
-      - run: yarn install --immutable
-      - run: yarn build
-      # TODO: add tests
-      # - run: npm test
-
   publish-npm:
     needs: build
     runs-on: ubuntu-latest
@@ -30,7 +16,6 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 20
-          cache: "yarn"
           registry-url: "https://registry.npmjs.org"
           scope: "@briankosw"
       - run: corepack enable

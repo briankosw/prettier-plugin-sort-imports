@@ -3,6 +3,9 @@
   "main": "dist/index",
   "description": "A Prettier plugin that sorts your import declarations.",
   "version": "0.0.5",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc",
     "test": "jest"
@@ -24,7 +27,7 @@
   "peerDependencies": {
     "prettier": ">=2 || >=3"
   },
-  "packageManager": "yarn@3.5.1",
+  "packageManager": "yarn@4.9.2",
   "directories": {
     "test": "tests"
   },

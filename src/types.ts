@@ -1,6 +1,6 @@
-import { RequiredOptions } from 'prettier';
+import { ParserOptions } from "prettier";
 
-export interface Options extends RequiredOptions {
+export interface Options extends ParserOptions {
   addEmptyLinesBetweenImportGroups?: boolean;
   importGroups?: string[];
 }
@@ -8,6 +8,6 @@ export interface Options extends RequiredOptions {
 export type LineRange = {
   readonly start: number;
   readonly end: number;
-}
+};
 
 export type ImportSource = string;

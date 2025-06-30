@@ -31,6 +31,7 @@ jobs:
           cache: "yarn"
           registry-url: "https://registry.npmjs.org"
           scope: "@briankosw"
+      - run: corepack enable
       - run: yarn install --immutable
       - run: yarn build
       - run: yarn npm publish --access public

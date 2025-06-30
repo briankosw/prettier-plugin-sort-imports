@@ -2,7 +2,7 @@
   "name": "@briankosw/prettier-plugin-sort-imports",
   "main": "dist/index",
   "description": "A Prettier plugin that sorts your import declarations.",
-  "version": "0.0.5",
+  "version": "1.0.0",
   "files": [
     "dist"
   ],

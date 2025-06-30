@@ -54,8 +54,10 @@ export const parsers: Plugin["parsers"] = {
 
       validateImportGroups(options.importGroups);
 
+      const enableJsx = options.filepath?.endsWith("tsx");
       const ast = parse(text, {
         ...options,
+        jsx: enableJsx,
         loc: true,
         range: true,
         comment: true,
